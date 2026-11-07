@@ -92,6 +92,7 @@ This will migrate any old rules previous versions created and apply the current 
 10. `.clip` file association so double-clicking opens CSP
 11. KDE window rules (KDE only) so ribbon bar dropdowns appear on top of CSP instead of behind it. If this doesn't apply properly you can right click your CSP icon in your taskbar or set up window rules yourself!
 12. A wineserver pre-warm service so CSP launches a bit faster
+13. A patched `winex11.so` so menu bar menus open right under the menu bar (see below)
 
 > **Note:** `.clip` file thumbnails need to be **enabled in your file manager's preview settings** — on Dolphin/KDE, open _Configure Dolphin → Interface → Previews_ and tick the "Clip Studio Paint File" entry (after running the installer, restart your file manager).
 
@@ -107,6 +108,21 @@ winetricks <package>
 ```
 
 Find the installed version with `ls ~/.local/share/cspenguin/wine-*/`.
+
+## Menu placement patch (winex11)
+
+CSP draws its menus as borderless popup windows owned by small helper windows. Stock Wine hands
+these to the window manager as transient dialogs, and some window managers (notably COSMIC) then
+place them on their own, so menus pop up far from the menu bar or even on another monitor.
+
+The installer replaces the bundled `winex11.so` with one that keeps owned borderless popups
+(menus, tooltips, dropdowns) unmanaged, so Wine positions them itself. The main window stays
+managed, so focus, keyboard shortcuts and Alt+Tab keep working.
+
+- Source: [`patches/winex11-unmanaged-owned-popups.patch`](patches/winex11-unmanaged-owned-popups.patch) against the official Wine source
+- Build: `patches/build-winex11.sh [WINE_VERSION]` rebuilds it reproducibly in an AlmaLinux 8 container (podman or docker, glibc 2.28)
+- To fall back to stock behaviour for one run, launch with `CSPENGUIN_MANAGED_POPUPS=1`
+- To revert completely, copy `winex11.so.orig` back over `winex11.so` in `~/.local/share/cspenguin/wine-<VERSION>/lib/wine/x86_64-unix/`
 
 ## Known issues
 

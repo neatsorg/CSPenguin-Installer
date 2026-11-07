@@ -875,6 +875,50 @@ REGEOF
     else
         warn "exact patches not available for Wine ${WINE_VERSION}; video export may not work"
     fi
+
+    _install_winex11_patch
+}
+
+# patched winex11.so: keeps owned borderless popups (CSP menus) unmanaged so
+# window managers such as COSMIC don't re-place them away from the menu bar.
+# source: patches/winex11-unmanaged-owned-popups.patch, built by patches/build-winex11.sh
+_install_winex11_patch() {
+    local _src="$SCRIPT_DIR/patches/x86_64-unix-wine${WINE_VERSION}/winex11.so"
+    if [[ ! -f "$_src" ]]; then
+        local _fallback="$DOWNLOAD_DIR/patches/x86_64-unix-wine${WINE_VERSION}"
+        if _try_fetch_patch "$_fallback" "patches/x86_64-unix-wine${WINE_VERSION}" "winex11.so"; then
+            _src="$_fallback/winex11.so"
+        else
+            info "no patched winex11.so for Wine ${WINE_VERSION}; menus may be misplaced on some window managers"
+            return 0
+        fi
+    fi
+
+    local _wine_unix="$WINE_DIR/lib/wine/x86_64-unix"
+    [[ -d "$_wine_unix" ]] || _wine_unix="$WINE_DIR/lib64/wine/x86_64-unix"
+    if [[ ! -f "$_wine_unix/winex11.so" ]]; then
+        warn "winex11.so not found in $_wine_unix; skipping menu placement patch"
+        return 0
+    fi
+
+    if cmp -s "$_src" "$_wine_unix/winex11.so"; then
+        ok "patches applied: menu placement (winex11, already installed)"
+        return 0
+    fi
+    if [[ $DRY_RUN -eq 1 ]]; then
+        ok "patches applied: menu placement (winex11, dry run)"
+        return 0
+    fi
+
+    # keep the stock driver once, so the patch can be reverted by hand
+    [[ -f "$_wine_unix/winex11.so.orig" ]] || cp -p "$_wine_unix/winex11.so" "$_wine_unix/winex11.so.orig"
+    if cp -f "$_src" "$_wine_unix/winex11.so"; then
+        # running Wine processes (explorer.exe etc.) still hold the old driver
+        "$WINESERVER_BIN" -k 2>/dev/null || true
+        ok "patches applied: menu placement (winex11)"
+    else
+        warn "failed to install patched winex11.so"
+    fi
 }
 
 # existing install found and no mode flag given -- ask what to do
@@ -1082,6 +1126,7 @@ DXVKEOF
     install_cjk_font_fix
     _bundle_freetype
     _install_gecko
+    _install_winex11_patch
 
     # fall through to step 6 and step 7, heh 6 7 >:D
 fi

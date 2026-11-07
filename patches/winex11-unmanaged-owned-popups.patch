@@ -1,0 +1,29 @@
+--- a/dlls/winex11.drv/window.c
++++ b/dlls/winex11.drv/window.c
+@@ -444,6 +444,26 @@
+     /* child windows are not managed */
+     style = NtUserGetWindowLongW( hwnd, GWL_STYLE );
+     if ((style & (WS_CHILD|WS_POPUP)) == WS_CHILD) return FALSE;
++    /* CSPenguin: owned borderless popups (menus, tooltips, dropdowns) are not managed,
++     * even when activated. Some window managers (e.g. COSMIC) re-place managed
++     * transient windows and ignore the requested position, which makes menus
++     * appear far away from where they were opened. */
++    if (!fullscreen && (style & WS_POPUP) && (style & WS_CAPTION) != WS_CAPTION &&
++        !(style & (WS_THICKFRAME | WS_SYSMENU)) && NtUserGetWindowRelative( hwnd, GW_OWNER ))
++    {
++        static int enabled = -1;
++        if (enabled == -1)
++        {
++            const char *env = getenv( "CSPENGUIN_MANAGED_POPUPS" );
++            enabled = !(env && *env == '1');
++        }
++        ex_style = NtUserGetWindowLongW( hwnd, GWL_EXSTYLE );
++        if (enabled && !(ex_style & WS_EX_APPWINDOW))
++        {
++            TRACE( "%p: owned borderless popup, not managed\n", hwnd );
++            return FALSE;
++        }
++    }
+     /* activated windows are managed */
+     if (!(swp_flags & (SWP_NOACTIVATE|SWP_HIDEWINDOW))) return TRUE;
+     if (hwnd == get_active_window()) return TRUE;
