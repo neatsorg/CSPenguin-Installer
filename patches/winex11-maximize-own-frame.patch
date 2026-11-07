@@ -19,7 +19,7 @@
      return get_mwm_decorations_for_style( style, ex_style );
  }
  
-@@ -3314,7 +3326,13 @@
+@@ -3321,7 +3333,13 @@
      }
  
      /* don't change position if we are about to minimize or maximize a managed window */

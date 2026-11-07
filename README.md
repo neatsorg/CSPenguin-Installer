@@ -113,9 +113,10 @@ Find the installed version with `ls ~/.local/share/cspenguin/wine-*/`.
 
 On some window managers, notably COSMIC, stock Wine misplaces CSP's windows:
 
-- **Menus** pop up far from the menu bar or even on another monitor. CSP draws its menus as
-  borderless popups owned by small helper windows; stock Wine hands them to the window manager
-  as transient dialogs, which it then places on its own.
+- **Menus and tooltips** pop up far from the menu bar or the hovered button, even on another monitor.
+  CSP draws its menus as borderless popups owned by small helper windows; stock Wine hands them to
+  the window manager as transient dialogs, which it then places on its own. Tooltips end up the same
+  way because they are created with a caption and only become borderless popups before being shown.
 - **Maximize** snaps back right away. CSP draws its own frame and expects a maximized window to
   cover the work area plus a frame that lies off screen, like on Windows. The window manager
   maximizes the host window to the work area instead, the size change is reported back, and CSP
@@ -124,8 +125,9 @@ On some window managers, notably COSMIC, stock Wine misplaces CSP's windows:
 The installer replaces the bundled `winex11.so` and `win32u.so` (always together) with versions
 that:
 
-- keep owned borderless popups (menus, tooltips, dropdowns) unmanaged, so Wine positions them itself.
-  The main window stays managed, so focus, keyboard shortcuts and Alt+Tab keep working.
+- keep owned borderless popups (menus, tooltips, dropdowns) unmanaged, so Wine positions them itself,
+  and decide whether a window is managed only once it is shown (a window can't be made unmanaged
+  again). The main window stays managed, so focus, keyboard shortcuts and Alt+Tab keep working.
 - keep the off screen frame of a maximized window that draws its own frame out of the host window,
   so the host window matches the rect the window manager maximizes it to.
 - don't send position requests or ask for window manager decorations while such a window is maximized.
