@@ -123,6 +123,7 @@ managed, so focus, keyboard shortcuts and Alt+Tab keep working.
 - Build: `patches/build-winex11.sh [WINE_VERSION]` rebuilds it reproducibly in an AlmaLinux 8 container (podman or docker, glibc 2.28)
 - To fall back to stock behaviour for one run, launch with `CSPENGUIN_MANAGED_POPUPS=1`
 - To revert completely, copy `winex11.so.orig` back over `winex11.so` in `~/.local/share/cspenguin/wine-<VERSION>/lib/wine/x86_64-unix/`
+- License: the shipped `winex11.so` is a modified part of Wine, licensed under the LGPL-2.1-or-later. Its corresponding source is the official `wine-<VERSION>` tarball from dl.winehq.org plus the patch above, and `build-winex11.sh` reproduces the binary.
 
 ## Known issues
 
