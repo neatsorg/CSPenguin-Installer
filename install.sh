@@ -713,6 +713,15 @@ export mesa_glthread=true
 export __GL_SHADER_DISK_CACHE=1
 export __GL_SHADER_DISK_CACHE_PATH="$WINEPREFIX"
 export RADV_PERFTEST=gpl
+# Wine's X11 driver takes IME input over XIM, which needs XMODIFIERS. Wayland sessions
+# often leave it unset, so pick the running input method unless the user set one.
+if [[ -z "\${XMODIFIERS:-}" ]]; then
+    if pgrep -u "\$(id -u)" -x fcitx5 >/dev/null 2>&1 || pgrep -u "\$(id -u)" -x fcitx >/dev/null 2>&1; then
+        export XMODIFIERS=@im=fcitx
+    elif pgrep -u "\$(id -u)" -x ibus-daemon >/dev/null 2>&1; then
+        export XMODIFIERS=@im=ibus
+    fi
+fi
 export WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--no-sandbox --disable-gpu-compositing --disable-gpu-vsync --in-process-gpu --disable-background-networking --no-first-run --disable-sync --disable-renderer-accessibility --disable-extensions --disable-component-extensions-with-background-pages --disk-cache-size=33554432 --disable-features=msEdgeSidebar"
 CSP_EXE="$CSP_INSTALL_PATH"
 
@@ -781,6 +790,15 @@ export mesa_glthread=true
 export __GL_SHADER_DISK_CACHE=1
 export __GL_SHADER_DISK_CACHE_PATH="$WINEPREFIX"
 export RADV_PERFTEST=gpl
+# Wine's X11 driver takes IME input over XIM, which needs XMODIFIERS. Wayland sessions
+# often leave it unset, so pick the running input method unless the user set one.
+if [[ -z "\${XMODIFIERS:-}" ]]; then
+    if pgrep -u "\$(id -u)" -x fcitx5 >/dev/null 2>&1 || pgrep -u "\$(id -u)" -x fcitx >/dev/null 2>&1; then
+        export XMODIFIERS=@im=fcitx
+    elif pgrep -u "\$(id -u)" -x ibus-daemon >/dev/null 2>&1; then
+        export XMODIFIERS=@im=ibus
+    fi
+fi
 export WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--no-sandbox --disable-gpu-compositing --disable-gpu-vsync --in-process-gpu --disable-renderer-accessibility --disable-extensions --disable-component-extensions-with-background-pages --disk-cache-size=33554432 --disable-features=msEdgeSidebar"
 exec wine "$STUDIO_EXE"
 LAUNCHEOF
